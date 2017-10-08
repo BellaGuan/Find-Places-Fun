@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-cmn">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>街区地图</title>
+    <style>
+        html,body{
+            height: 100%;
+        }
+
+        .container{
+            position: relative;
+            height: 100%;
+        }
+
+        .search{
+            background: #343434;
+            border-radius: 3px;
+            height: 100%;
+            line-height: 35px;
+            text-align: left;
+            width: 25%;
+        }
+
+        #tip{
+            color:#f2f2f2;
+            text-align: center;
+            font-size: 1em;
+        }
+        #map{
+            height: 100%;
+            left: 25%;
+            right:0px;
+            top: 0px;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" >
+        <div class="search">
+            <div id="tip"></div>
+            <input id="place" type="text">
+            <input id="filter" type="button" value="筛选">
+            <div class="placeList"></div>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.4.0&key=71cc0c6a8176da025c92a68e479e972b&plugin=AMap.CitySearch,AMap.MapType"></script>
+    <script type="text/javascript">
+        //初始化地图对象，加载地图
+        //初始化加载地图时，若center及level属性缺省，地图默认显示用户当前城市范围
+        var map = new AMap.Map('map',{
+            resizeEnable: true,
+            mapStyle:'amap://styles/whitesmoke'
+        });
+
+         //实例化城市查询类
+        var citysearch = new AMap.CitySearch();
+        //自动获取用户IP，返回当前城市
+        citysearch.getLocalCity(function(status, result) {
+            if (status === 'complete' && result.info === 'OK') {
+                if (result && result.city && result.bounds) {
+                    var cityinfo = result.city;
+                    var citybounds = result.bounds;
+                    document.getElementById('tip').innerHTML = '您当前所在城市：'+cityinfo;
+                    //地图显示当前城市
+                    map.setBounds(citybounds);
+                }
+            } else {
+                document.getElementById('tip').innerHTML = result.info;
+            }
+        });
+
+        map.addControl(new AMap.MapType());
+
+    </script>
+
+
+</body>
+</html>
