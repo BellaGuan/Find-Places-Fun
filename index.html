@@ -24,10 +24,10 @@
             width: 25%;
         }
 
-        #tip{
+        .search>p{
             color:#f2f2f2;
             text-align: center;
-            font-size: 1em;
+            font-size: 1.2em;
         }
         #map{
             height: 100%;
@@ -36,50 +36,152 @@
             top: 0px;
             position: absolute;
         }
+
+        .placeList li{
+            font-size: 0.8em;
+            color: #d4d2d2;
+            list-style-image:url(img/列表_15px.png);
+        }
+
+        a[target=_blank]>img:hover{
+            background:#f7bc1b;
+        }
+        @keyframes mymove{
+            0%   { background:#f7bc1b;}
+            100% {background:white;}
+        }
     </style>
 </head>
 <body>
     <div class="container" >
         <div class="search">
-            <div id="tip"></div>
-            <input id="place" type="text">
-            <input id="filter" type="button" value="筛选">
-            <div class="placeList"></div>
+         <!--   <p>请输入城市：<input data-bind="textInput:city"></input></p>  -->
+            <input id="place" type="text" placeholder="地点筛选" data-bind="textInput:filter">
+            <input id="filter" type="button" value="筛选" data-bind="click:filterPlaces" >
+            <div class="placeList">
+                <ul data-bind="foreach:currentPlaces">
+                    <li data-bind="text:F.title,click:$parent.clickItem"></li>
+                </ul>
+            </div>
         </div>
 
         <div id="map"></div>
     </div>
 
-    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.0&key=71cc0c6a8176da025c92a68e479e972b&plugin=AMap.CitySearch,AMap.MapType"></script>
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="knockout-3.4.2.js"></script>
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.0&key=71cc0c6a8176da025c92a68e479e972b&plugin=AMap.AdvancedInfoWindow"></script>
     <script type="text/javascript">
-        //初始化地图对象，加载地图
-        //初始化加载地图时，若center及level属性缺省，地图默认显示用户当前城市范围
-        var map = new AMap.Map('map',{
+        "use strict";
+        //model
+        //从foursquare获得初始数据
+        var initPlaces=[],
+            placeUrl = "https://api.foursquare.com/v2/venues/explore?client_id=1W4MLPRUVL0SLTUVQQZZD3Y5NH1XXFHNFESDMKH4BIVBRRH2%20&client_secret=5UAP10PMGT4MVMPLSJ3TA5CHW00UX1A4B0K045HPHFOL4YHA%20&near=guangzhou&query=sights%20&limit=13&venuePhotos=1&v=20171010%20&m=foursquare";
+
+        $.ajax({
+                url: placeUrl,
+                async: false
+            })
+            .done(function(data) {
+                var items = data.response.groups[0].items;
+                items.forEach(function(item) {
+                    initPlaces.push({
+                        name: item.venue.name,
+                        lngLat: [item.venue.location.lng, item.venue.location.lat],
+                        rating: item.venue.rating,
+                        ratingSignals: item.venue.ratingSignals,
+                        website: item.tips[0].canonicalUrl,
+                        textIntro:item.tips[0].text,
+                        imgUrl: item.venue.photos.groups[0].items[0].prefix + "width150" + item.venue.photos.groups[0].items[0].suffix,
+                    });
+                });
+            })
+            .fail(function(errorMessage) {
+                alert(errorMessage.responseJSON.meta.errorDetail);
+            });
+
+        //地图viewModel
+        var map = new AMap.Map('map', {
             resizeEnable: true,
-            mapStyle:'amap://styles/whitesmoke'
+            mapStyle: 'amap://styles/whitesmoke'
         });
 
-         //实例化城市查询类
-        var citysearch = new AMap.CitySearch();
-        //自动获取用户IP，返回当前城市
-        citysearch.getLocalCity(function(status, result) {
-            if (status === 'complete' && result.info === 'OK') {
-                if (result && result.city && result.bounds) {
-                    var cityinfo = result.city;
-                    var citybounds = result.bounds;
-                    document.getElementById('tip').innerHTML = '您当前所在城市：'+cityinfo;
-                    //地图显示当前城市
-                    map.setBounds(citybounds);
+        var infoWindow = new AMap.AdvancedInfoWindow({
+            offset: new AMap.Pixel(15, -30),
+            autoMove:true
+        });
+
+        //用knockout.js处理列表视图
+        function listViewModel() {
+            var self = this,
+                selectedPlaces=[];
+
+            self.filter=ko.observable('');
+
+            self.currentPlaces = ko.observableArray();
+
+            self.createMarker=function(currentPlacesArray){
+                currentPlacesArray.forEach(function(place){
+                    var marker = new AMap.Marker({
+                        icon: "img/marker-48.png",
+                        position: place.lngLat,
+                        map: map,
+                        title: place.name
+                    });
+                    //每个marker的带有自己的content，给infowindow调用setContent()
+                    marker.content="<div style=\'padding:10px;\'><a target=_blank href='" + place.website + "'><img style=\'float:left;margin-right:10px;padding:5px;animation:mymove 2s 3;\'src='" + place.imgUrl + "'></a><div><h3>" + place.name + "</h3>score: " + place.rating + "\/10 </br>" + place.ratingSignals + " ratings</div></br><div style=\'clear:both;\'><q>" + place.textIntro + "</q></div></div>";
+
+                    //绑定点击事件
+                    marker.on("click",clicked);
+                    self.currentPlaces.push(marker);
+                });
+            };
+
+            self.filterPlaces=ko.computed(function(){
+                if(self.filter().length==0){
+                    return self.createMarker(initPlaces);
+                }else{
+                    initPlaces.forEach(function(place){
+                        if(place.name.indexOf(self.filter())>0){
+                            selectedPlaces.push(place);
+                        }
+                        return self.createMarker(selectedPlaces);
+                    });
                 }
-            } else {
-                document.getElementById('tip').innerHTML = result.info;
+            });
+
+            self.clickItem=function(place){
+                console.log(place);
+                clicked(place);
+            };
+
+        }
+        ko.applyBindings(new listViewModel());
+
+        //处理marker和list的click事件
+        function clicked(e) {
+            if(e.target){
+                return showInfoWindow(e.target);
+            }else{
+                return showInfoWindow(e);
             }
-        });
+        };
 
-        map.addControl(new AMap.MapType());
+        //展示信息窗口
+        function showInfoWindow(thisMarker){
+            //设置信息窗口内容，打开信息窗口
+            infoWindow.setContent(thisMarker.content);
+            infoWindow.open(map, thisMarker.getPosition());
+            //被点击的marker跳动
+            thisMarker.setAnimation("AMAP_ANIMATION_BOUNCE");
+            //通过计时器设定marker停止动画。关闭信息窗口
+            setTimeout(function(){
+                thisMarker.setAnimation("AMAP_ANIMATION_NONE");
+            },2000);
+        };
 
+        //自动调整地图视野以适合全部Marker
+        map.setFitView();
     </script>
-
-
 </body>
 </html>
