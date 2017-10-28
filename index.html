@@ -3,185 +3,38 @@
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta charset="UTF-8">
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <!--<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">-->
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+
     <title>街区地图</title>
-    <style>
-        html,body{
-            height: 100%;
-        }
-
-        .container{
-            position: relative;
-            height: 100%;
-        }
-
-        .search{
-            background: #343434;
-            border-radius: 3px;
-            height: 100%;
-            line-height: 35px;
-            text-align: left;
-            width: 25%;
-        }
-
-        .search>p{
-            color:#f2f2f2;
-            text-align: center;
-            font-size: 1.2em;
-        }
-        #map{
-            height: 100%;
-            left: 25%;
-            right:0px;
-            top: 0px;
-            position: absolute;
-        }
-
-        .placeList li{
-            font-size: 0.8em;
-            color: #d4d2d2;
-            list-style-image:url(img/列表_15px.png);
-        }
-
-        a[target=_blank]>img:hover{
-            background:#f7bc1b;
-        }
-        @keyframes mymove{
-            0%   { background:#f7bc1b;}
-            100% {background:white;}
-        }
-    </style>
 </head>
 <body>
     <div class="container" >
-        <div class="search">
-         <!--   <p>请输入城市：<input data-bind="textInput:city"></input></p>  -->
-            <input id="place" type="text" placeholder="地点筛选" data-bind="textInput:filter">
-            <input id="filter" type="button" value="筛选" data-bind="click:filterPlaces" >
-            <div class="placeList">
-                <ul data-bind="foreach:currentPlaces">
-                    <li data-bind="text:F.title,click:$parent.clickItem"></li>
-                </ul>
+        <nav class="menu">
+            <div>
+                <input placeholder="请输入城市" data-bind="value:city">
+                <button data-bind="click:citySearch">搜索</button>
             </div>
-        </div>
 
+            <div class="dropdown">
+                <input id="place" type="text" placeholder="请输入景点" data-bind="textInput:filter,event:{keyup:filterPlaces}">
+                <button data-bind="click:sortPlacesByRatingSignals">最受欢迎</button>
+
+                <div class="dropdown-content">
+                    <ul data-bind="foreach:currentPlaces">
+                        <li data-bind="text:F.title,click:$parent.clickItem"></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!--只能设置为id="map"而不设为class="map"-->
         <div id="map"></div>
     </div>
 
-    <script type="text/javascript" src="jquery.min.js"></script>
-    <script type="text/javascript" src="knockout-3.4.2.js"></script>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/knockout-3.4.2.js"></script>
     <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.0&key=71cc0c6a8176da025c92a68e479e972b&plugin=AMap.AdvancedInfoWindow"></script>
-    <script type="text/javascript">
-        "use strict";
-        //model
-        //从foursquare获得初始数据
-        var initPlaces=[],
-            placeUrl = "https://api.foursquare.com/v2/venues/explore?client_id=1W4MLPRUVL0SLTUVQQZZD3Y5NH1XXFHNFESDMKH4BIVBRRH2%20&client_secret=5UAP10PMGT4MVMPLSJ3TA5CHW00UX1A4B0K045HPHFOL4YHA%20&near=guangzhou&query=sights%20&limit=13&venuePhotos=1&v=20171010%20&m=foursquare";
-
-        $.ajax({
-                url: placeUrl,
-                async: false
-            })
-            .done(function(data) {
-                var items = data.response.groups[0].items;
-                items.forEach(function(item) {
-                    initPlaces.push({
-                        name: item.venue.name,
-                        lngLat: [item.venue.location.lng, item.venue.location.lat],
-                        rating: item.venue.rating,
-                        ratingSignals: item.venue.ratingSignals,
-                        website: item.tips[0].canonicalUrl,
-                        textIntro:item.tips[0].text,
-                        imgUrl: item.venue.photos.groups[0].items[0].prefix + "width150" + item.venue.photos.groups[0].items[0].suffix,
-                    });
-                });
-            })
-            .fail(function(errorMessage) {
-                alert(errorMessage.responseJSON.meta.errorDetail);
-            });
-
-        //地图viewModel
-        var map = new AMap.Map('map', {
-            resizeEnable: true,
-            mapStyle: 'amap://styles/whitesmoke'
-        });
-
-        var infoWindow = new AMap.AdvancedInfoWindow({
-            offset: new AMap.Pixel(15, -30),
-            autoMove:true
-        });
-
-        //用knockout.js处理列表视图
-        function listViewModel() {
-            var self = this,
-                selectedPlaces=[];
-
-            self.filter=ko.observable('');
-
-            self.currentPlaces = ko.observableArray();
-
-            self.createMarker=function(currentPlacesArray){
-                currentPlacesArray.forEach(function(place){
-                    var marker = new AMap.Marker({
-                        icon: "img/marker-48.png",
-                        position: place.lngLat,
-                        map: map,
-                        title: place.name
-                    });
-                    //每个marker的带有自己的content，给infowindow调用setContent()
-                    marker.content="<div style=\'padding:10px;\'><a target=_blank href='" + place.website + "'><img style=\'float:left;margin-right:10px;padding:5px;animation:mymove 2s 3;\'src='" + place.imgUrl + "'></a><div><h3>" + place.name + "</h3>score: " + place.rating + "\/10 </br>" + place.ratingSignals + " ratings</div></br><div style=\'clear:both;\'><q>" + place.textIntro + "</q></div></div>";
-
-                    //绑定点击事件
-                    marker.on("click",clicked);
-                    self.currentPlaces.push(marker);
-                });
-            };
-
-            self.filterPlaces=ko.computed(function(){
-                if(self.filter().length==0){
-                    return self.createMarker(initPlaces);
-                }else{
-                    initPlaces.forEach(function(place){
-                        if(place.name.indexOf(self.filter())>0){
-                            selectedPlaces.push(place);
-                        }
-                        return self.createMarker(selectedPlaces);
-                    });
-                }
-            });
-
-            self.clickItem=function(place){
-                console.log(place);
-                clicked(place);
-            };
-
-        }
-        ko.applyBindings(new listViewModel());
-
-        //处理marker和list的click事件
-        function clicked(e) {
-            if(e.target){
-                return showInfoWindow(e.target);
-            }else{
-                return showInfoWindow(e);
-            }
-        };
-
-        //展示信息窗口
-        function showInfoWindow(thisMarker){
-            //设置信息窗口内容，打开信息窗口
-            infoWindow.setContent(thisMarker.content);
-            infoWindow.open(map, thisMarker.getPosition());
-            //被点击的marker跳动
-            thisMarker.setAnimation("AMAP_ANIMATION_BOUNCE");
-            //通过计时器设定marker停止动画。关闭信息窗口
-            setTimeout(function(){
-                thisMarker.setAnimation("AMAP_ANIMATION_NONE");
-            },2000);
-        };
-
-        //自动调整地图视野以适合全部Marker
-        map.setFitView();
-    </script>
+    <script type="text/javascript" src="js/app.js"></script>
 </body>
 </html>
