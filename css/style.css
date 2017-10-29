@@ -40,14 +40,14 @@ button:hover {
     display: inline-block;
 }
 
-.dropdown-content {
+.dropdown__content {
     display: none;
     position: absolute;
     min-width: 300px;
     background:rgba(255, 255, 255,0.8);
 }
 
-.dropdown:hover .dropdown-content {
+.dropdown:hover .dropdown__content {
     display: block;
     z-index: 1;
 }

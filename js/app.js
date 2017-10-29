@@ -9,7 +9,9 @@ var map = new AMap.Map('map', {
 });
 
 var infoWindow = new AMap.AdvancedInfoWindow({
-    offset: new AMap.Pixel(15, -30),
+    offset: new AMap.Pixel(7, -30),
+    isCustom:true,
+    closeWhenClickMap:true,
     autoMove: true
 });
 
@@ -31,7 +33,7 @@ function listViewModel() {
 
         placesArray.forEach(function(place) {
             var marker = new AMap.Marker({
-                icon: "img/marker-48.png",
+                icon: "img/marker-32.png",
                 position: place.lngLat,
                 map: map,
                 title: place.name

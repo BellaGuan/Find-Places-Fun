@@ -4,8 +4,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <!--<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">-->
-    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <!--<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    忽略样式表和脚本的类型属性,由于 HTML 意味着文本 /css 和文本 /javascript为默认设置。在老式浏览器中，也可以安全进行此项操作。-->
+    <link rel="stylesheet" href="css/style.css">
 
     <title>街区地图</title>
 </head>
@@ -18,23 +19,23 @@
             </div>
 
             <div class="dropdown">
-                <input id="place" type="text" placeholder="请输入景点" data-bind="textInput:filter,event:{keyup:filterPlaces}">
+                <input type="text" placeholder="请输入景点" data-bind="textInput:filter,event:{keyup:filterPlaces}">
                 <button data-bind="click:sortPlacesByRatingSignals">最受欢迎</button>
 
-                <div class="dropdown-content">
+                <div class="dropdown__content">
                     <ul data-bind="foreach:currentPlaces">
                         <li data-bind="text:F.title,click:$parent.clickItem"></li>
                     </ul>
                 </div>
             </div>
         </nav>
-        <!--只能设置为id="map"而不设为class="map"-->
+        <!--只能设置为id="map"而不能设为class="map"-->
         <div id="map"></div>
     </div>
 
-    <script type="text/javascript" src="js/jquery.min.js"></script>
-    <script type="text/javascript" src="js/knockout-3.4.2.js"></script>
-    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.0&key=71cc0c6a8176da025c92a68e479e972b&plugin=AMap.AdvancedInfoWindow"></script>
-    <script type="text/javascript" src="js/app.js"></script>
+    <script  src="js/jquery.min.js"></script>
+    <script  src="js/knockout-3.4.2.js"></script>
+    <script  src="https://webapi.amap.com/maps?v=1.4.0&key=71cc0c6a8176da025c92a68e479e972b&plugin=AMap.AdvancedInfoWindow"></script>
+    <script  src="js/app.js"></script>
 </body>
 </html>
