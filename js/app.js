@@ -33,7 +33,7 @@ function listViewModel() {
 
         placesArray.forEach(function(place) {
             var marker = new AMap.Marker({
-                icon: "img/marker-32.png",
+                icon: "img/marker-48.png",
                 position: place.lngLat,
                 map: map,
                 title: place.name
