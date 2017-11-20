@@ -39,11 +39,21 @@ function listViewModel() {
                 title: place.name
             });
             //每个marker的带有自己的content，给infowindow调用setContent()
-            marker.content = "<div style=\'padding:5px;\'><a target=_blank href='"
-                + place.website + "'><img style=\'float:left;margin-right:10px;padding:5px;animation:mymove 2s 3;\'src='"
-                + place.imgUrl + "'></a><div><h3>" + place.name + "</h3>score: "
-                + place.rating + "\/10 </br>" + place.ratingSignals + " ratings</div></br><div style=\'clear:both;\'><q>"
-                + place.textIntro + "</q></div></div>";
+            marker.content = `<div style=\'padding:5px;\'>
+                                <a target=_blank href="
+                                    ${place.website}">
+                                    <img style=\'float:left;margin-right:10px;padding:5px;animation:mymove 2s 3;\'src="${place.imgUrl}">
+                                </a>
+                                <div>
+                                    <h3>${place.name}</h3>
+                                    score:
+                                    ${place.rating}\/10 </br>
+                                    ${place.ratingSignals}ratings
+                                </div>
+                                <div style=\'clear:both;\'>
+                                    <q>${place.textIntro}</q>
+                                </div>
+                            </div>`;
 
             //绑定点击事件
             marker.on("click", clicked);
@@ -61,8 +71,8 @@ function listViewModel() {
     //从foursquare获得初始数据，或根据用户输入城市获得该城市景点数据
     self.citySearch=function(){
         initPlaces=[];
-        var placeUrl = "https://api.foursquare.com/v2/venues/explore?client_id=1W4MLPRUVL0SLTUVQQZZD3Y5NH1XXFHNFESDMKH4BIVBRRH2%20&client_secret=5UAP10PMGT4MVMPLSJ3TA5CHW00UX1A4B0K045HPHFOL4YHA%20&near="
-            +self.city()+"&query=sights%20&limit=13&venuePhotos=1&v=20171027%20&m=foursquare";
+        var placeUrl = `https://api.foursquare.com/v2/venues/explore?client_id=1W4MLPRUVL0SLTUVQQZZD3Y5NH1XXFHNFESDMKH4BIVBRRH2%20&client_secret=5UAP10PMGT4MVMPLSJ3TA5CHW00UX1A4B0K045HPHFOL4YHA%20&near="
+            ${self.city()}&query=sights%20&limit=13&venuePhotos=1&v=20171027%20&m=foursquare`;
 
         $.ajax({
                 url: placeUrl,
