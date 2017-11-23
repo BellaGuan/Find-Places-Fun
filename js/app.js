@@ -11,7 +11,6 @@ var map = new AMap.Map('map', {
 var infoWindow = new AMap.AdvancedInfoWindow({
     offset: new AMap.Pixel(7, -30),
     isCustom:true,
-    closeWhenClickMap:true,
     autoMove: true
 });
 
