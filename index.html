@@ -14,7 +14,7 @@
     <div class="container" >
         <nav class="menu">
             <div>
-                <input placeholder="请输入城市" data-bind="value:city">
+                <input type="text" placeholder="请输入城市" data-bind="value:city">
                 <button data-bind="click:citySearch">搜索</button>
             </div>
 
@@ -22,7 +22,7 @@
                 <input type="text" placeholder="请输入景点" data-bind="textInput:filter,event:{keyup:filterPlaces}">
                 <button data-bind="click:sortPlacesByRatingSignals">最受欢迎</button>
 
-                <div class="dropdown__content">
+                <div class="dropdown_content">
                     <ul data-bind="foreach:currentPlaces">
                         <li data-bind="text:F.title,click:$parent.clickItem"></li>
                     </ul>
@@ -32,6 +32,10 @@
         <!--只能设置为id="map"而不能设为class="map"-->
         <div id="map"></div>
     </div>
+    <figure>
+        <img src="img/1.gif" id="1" alt="react项目展示1">
+        <img src="img/2.gif" id="2" alt="react项目展示2">
+    </figure>
 
     <script  src="js/jquery.min.js"></script>
     <script  src="js/knockout-3.4.2.js"></script>

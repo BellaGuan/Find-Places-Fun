@@ -67,7 +67,6 @@ function listViewModel() {
         map.setFitView();
     };
 
-
     //从foursquare获得初始数据，或根据用户输入城市获得该城市景点数据
     self.citySearch=function(){
         initPlaces=[];
